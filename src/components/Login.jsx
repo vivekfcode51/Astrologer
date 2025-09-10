@@ -1,12 +1,57 @@
-import React, { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import authImage from "../assets/auth-side-bg.png";
-import google from "../assets/google.png"
-import github from "../assets/github.png"
-
+import google from "../assets/google.png";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
+  // Jaise hi phone number 10 digit hoga OTP send call karega
+  useEffect(() => {
+    if (phone.length === 10) {
+      handleSendOtp();
+    }
+  }, [phone]);
+
+  // otp send api call
+  const handleSendOtp = async (mobile) => {
+    try {
+      const url = `https://otp.fctechteam.org/send_otp.php?mode=test&digit=4&mobile=${mobile}`;
+      const res = await axios.get(url);
+      console.log("OTP sent to:", res);
+      if (res?.data?.error === "200") {
+        toast.success(res?.data?.msg || "OTP sent successfully!");
+        setOtpSent(true);
+      } else {
+        toast.error(res?.data?.msg || "Failed to send OTP");
+      }
+    } catch (error) {
+      console.error("OTP send failed", error);
+      toast.error("Something went wrong while sending OTP");
+
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      // Yaha OTP verify API call karo
+      const Url = `https://otp.fctechteam.org/verifyotp.php?mobile=${phone}&otp=${otp}`
+      const res = await axios.get(Url);
+      console.log("Verify Response:", res);
+      // Example response check
+      if (res?.data?.error === "200") {
+        toast.success("🎉 Login successful!");
+      } else {
+        toast.error(res?.data?.msg || "❌ Invalid OTP");
+      }
+    } catch (error) {
+      console.error("OTP verification failed", error);
+      toast.error("Something went wrong while verifying OTP");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white mt-4">
@@ -18,77 +63,72 @@ const Login = () => {
             Please enter your credentials to sign in!
           </p>
 
-          {/* Email */}
+          {/* Phone */}
           <div className="mb-4">
-            <label className="block text-sm text-[#737373] font-medium mb-2">Email</label>
+            <label className="block text-sm text-[#737373] font-medium mb-2">
+              Phone No.
+            </label>
             <input
-              type="email"
-              placeholder="admin-01@ecme.com"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-[#f5f5f5] focus:outline-none focus:ring-2 focus:ring-gray-300"
+              type="number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.slice(0, 10))} // max 10 digits
+              placeholder="Enter Your number"
+              className="w-full px-4 py-3 rounded-lg text-[#262626] font-[500] border border-gray-300 bg-[#f5f5f5] focus:outline-none focus:ring-2 focus:ring-gray-300
+                    [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]"
+            />
+            {otpSent && (
+              <p className="text-green-600 text-sm mt-1">OTP sent to your number</p>
+            )}
+          </div>
+
+          {/* OTP */}
+          <div className="mb-4">
+            <label className="block text-sm text-[#737373] font-medium mb-2">
+              Verify Otp.
+            </label>
+            <input
+              type="number"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter Your otp"
+              className="w-full px-4 py-3 rounded-lg text-[#262626] font-[500] border border-gray-300 bg-[#f5f5f5] focus:outline-none focus:ring-2 focus:ring-gray-300
+                    [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]"
             />
           </div>
 
-          {/* Password */}
-          <div className="mb-2">
-            <label className="block text-sm text-[#737373] font-medium mb-2">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-[#f5f5f5] focus:outline-none focus:ring-2 focus:ring-gray-300"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-500"
-              >
-                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="text-right mb-6">
-            <a href="#" className="text-sm text-black font-medium">
-              Forgot password
-            </a>
-          </div>
-
           {/* Sign In Button */}
-          <button className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:opacity-90 transition">
+          <button
+            onClick={handleLogin}
+            disabled={!otp} 
+            className={`w-full py-3 rounded-lg font-semibold transition 
+                ${otp ? "bg-black text-white hover:opacity-90" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+          >
             Sign In
           </button>
 
           {/* OR Divider */}
           <div className="flex items-center my-6">
             <div className="flex-grow border-t border-gray-300"></div>
-            <span className="mx-4 text-[#171717] font-semibold text-sm">or continue with</span>
+            <span className="mx-4 text-[#171717] font-semibold text-sm">
+              or continue with
+            </span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
 
           {/* Social Buttons */}
           <div className="flex gap-4">
-
             <button className="button bg-white border border-gray-300 ring-primary 
                  hover:border-primary hover:ring-1 hover:text-primary text-gray-600 h-12 rounded-xl px-5 py-2 flex-1 button-press-feedback">
               <div className="flex items-center justify-center gap-2">
-                <img src={google} alt="Google sign in" className="w-[25px] h-[25px]"/>
+                <img src={google} alt="Google sign in" className="w-[25px] h-[25px]" />
                 <span>Google</span>
               </div>
             </button>
-
-            {/* <button className="button bg-white border border-gray-300 ring-primary
-                hover:border-primary hover:ring-1 hover:text-primary text-gray-600 h-12 rounded-xl px-5 py-2 flex-1 button-press-feedback">
-              <div className="flex items-center justify-center gap-2">
-                <img src={github} alt="Google sign in" className="w-[25px] h-[25px]"/>
-                <span>Github</span>
-              </div>
-            </button> */}
-
           </div>
         </div>
 
         {/* Right Side (Image) */}
-        <div className="py-6 px-10 lg:flex flex-col flex-1 justify-between hidden rounded-3xl items-end relative max-w-[520px] 2xl:max-w-[720px]">
+        <div className="py-6 px-10 md:flex flex-col flex-1 justify-between hidden rounded-3xl items-end relative max-w-[520px] 2xl:max-w-[720px]">
           <img
             src={authImage}
             alt="login banner"
@@ -101,5 +141,3 @@ const Login = () => {
 };
 
 export default Login;
-
-
