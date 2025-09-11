@@ -54,24 +54,28 @@ const ProfileMenu = () => {
 
             {/* Menu Items with Routing */}
             <div className="flex flex-col mt-3 gap-2 text-sm font-semibold">
+
               <button
                 onClick={() => navigate("/profile")}
                 className="flex items-center gap-2 px-2 py-2 text-[#525252] rounded hover:bg-gray-200"
               >
                 <User size={18} /> Profile
               </button>
+
               <button
                 onClick={() => navigate("/account-setting")}
                 className="flex items-center gap-2 px-2 py-2 rounded text-[#525252] hover:bg-gray-200"
               >
                 <Settings size={18} /> Account Setting
               </button>
+
               <button
                 onClick={() => navigate("/activity-log")}
                 className="flex items-center gap-2 px-2 py-2 rounded text-[#525252] hover:bg-gray-200"
               >
                 <Activity size={18} /> Activity Log
               </button>
+              
             </div>
 
             {/* Sign Out */}
