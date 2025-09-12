@@ -88,7 +88,7 @@ const Sidebar = ({ sidebarOpen, onClose }) => {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="self-end text-gray-600 hover:text-black mb-6"
+            className="self-end bg-[#f5f5f5] text-gray-600 hover:text-black h-10 w-10 mb-6 font-extrabold rounded-[3.40282e38px] p-1"
           >
             ✕
           </button>

@@ -3,7 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Layout from "./Layout";
 import Login from './components/Login';
 import Home from './pages/home/Home'
-import Profile from './pages/profile/profile'
+import ProfileLayout from './pages/profilePage/ProfileLayout'
 
 const Router = createBrowserRouter
 
@@ -24,7 +24,7 @@ export default Router([
 
             {
                 path: "/profile",
-                element: <Profile/>
+                element: <ProfileLayout/>
             },
             
         ],

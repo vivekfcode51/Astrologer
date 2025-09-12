@@ -10,7 +10,7 @@ const Layout = () => {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar Fix Left */}
-      <Sidebar sidebarOpen={sidebarOpen} />
+      <Sidebar sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}/>
 
       {/* Right Section (Header + Content + Footer) */}
       <div
@@ -22,7 +22,7 @@ const Layout = () => {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto bg-[#f5f5f5] p-6">
+        <div className="flex-1 overflow-y-auto bg-[#f5f5f5] p-1  xs3:p-4">
           <Outlet />
         </div>
 

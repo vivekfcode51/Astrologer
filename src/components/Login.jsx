@@ -3,23 +3,25 @@ import authImage from "../assets/auth-side-bg.png";
 import google from "../assets/google.png";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const navigate = useNavigate();
 
   // Jaise hi phone number 10 digit hoga OTP send call karega
   useEffect(() => {
     if (phone.length === 10) {
-      handleSendOtp();
+      handleSendOtp(phone);
     }
   }, [phone]);
 
   // otp send api call
   const handleSendOtp = async (mobile) => {
     try {
-      const url = `https://otp.fctechteam.org/send_otp.php?mode=test&digit=4&mobile=${mobile}`;
+      const url = `https://otp.fctechteam.org/send_otp.php?mobile=${mobile}&digit=6&mode=live`;
       const res = await axios.get(url);
       console.log("OTP sent to:", res);
       if (res?.data?.error === "200") {
@@ -31,25 +33,45 @@ const Login = () => {
     } catch (error) {
       console.error("OTP send failed", error);
       toast.error("Something went wrong while sending OTP");
-
     }
   };
 
+  // login + otp verify
   const handleLogin = async () => {
     try {
-      // Yaha OTP verify API call karo
-      const Url = `https://otp.fctechteam.org/verifyotp.php?mobile=${phone}&otp=${otp}`
-      const res = await axios.get(Url);
-      console.log("Verify Response:", res);
-      // Example response check
-      if (res?.data?.error === "200") {
-        toast.success("🎉 Login successful!");
+      // Step 1: OTP verify
+      const verifyUrl = `https://otp.fctechteam.org/verifyotp.php?mobile=${phone}&otp=${otp}`;
+      const verifyRes = await axios.get(verifyUrl);
+      console.log("Verify OTP:", verifyRes);
+
+      if (verifyRes?.data?.error === "200") {
+        // toast.success("✅ OTP Verified!");
+
+        // Step 2: Login API call
+        const loginRes = await axios.post(
+          "https://astrovaaani.com/api/auth/login",
+          {
+            mobile: phone,
+            role: "admin", // default role
+          },
+          {
+            withCredentials: true, // ✅ accessToken cookie ke through jayega
+          }
+        );
+        console.log("login Response", loginRes)
+
+        if (loginRes?.status === 201 || loginRes?.data?.status === 201) {
+          toast.success(loginRes?.data?.message || "🎉 Login successful!");
+          navigate("/");
+        } else {
+          toast.error(loginRes?.data?.message || "❌ Login failed");
+        }
       } else {
-        toast.error(res?.data?.msg || "❌ Invalid OTP");
+        toast.error(verifyRes?.data?.msg || "❌ Invalid OTP");
       }
     } catch (error) {
-      console.error("OTP verification failed", error);
-      toast.error("Something went wrong while verifying OTP");
+      console.error("Login failed", error);
+      toast.error("Something went wrong while logging in");
     }
   };
 
@@ -71,13 +93,15 @@ const Login = () => {
             <input
               type="number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value.slice(0, 10))} // max 10 digits
+              onChange={(e) => setPhone(e.target.value.slice(0, 10))}
               placeholder="Enter Your number"
               className="w-full px-4 py-3 rounded-lg text-[#262626] font-[500] border border-gray-300 bg-[#f5f5f5] focus:outline-none focus:ring-2 focus:ring-gray-300
                     [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]"
             />
             {otpSent && (
-              <p className="text-green-600 text-sm mt-1">OTP sent to your number</p>
+              <p className="text-green-600 text-[12px] xs3:text-[16px] mt-1">
+                OTP sent to your number
+              </p>
             )}
           </div>
 
@@ -99,32 +123,16 @@ const Login = () => {
           {/* Sign In Button */}
           <button
             onClick={handleLogin}
-            disabled={!otp} 
+            disabled={!otp}
             className={`w-full py-3 rounded-lg font-semibold transition 
-                ${otp ? "bg-black text-white hover:opacity-90" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                ${
+                  otp
+                    ? "bg-black text-white hover:opacity-90"
+                    : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                }`}
           >
             Sign In
           </button>
-
-          {/* OR Divider */}
-          <div className="flex items-center my-6">
-            <div className="flex-grow border-t border-gray-300"></div>
-            <span className="mx-4 text-[#171717] font-semibold text-sm">
-              or continue with
-            </span>
-            <div className="flex-grow border-t border-gray-300"></div>
-          </div>
-
-          {/* Social Buttons */}
-          <div className="flex gap-4">
-            <button className="button bg-white border border-gray-300 ring-primary 
-                 hover:border-primary hover:ring-1 hover:text-primary text-gray-600 h-12 rounded-xl px-5 py-2 flex-1 button-press-feedback">
-              <div className="flex items-center justify-center gap-2">
-                <img src={google} alt="Google sign in" className="w-[25px] h-[25px]" />
-                <span>Google</span>
-              </div>
-            </button>
-          </div>
         </div>
 
         {/* Right Side (Image) */}
